@@ -4,8 +4,8 @@ This is a node binding for skip32.c by Greg Rose found here:
 
 http://www.qualcomm.com.au/PublicationsDocs/skip32.c
 
-SKIP32 is a 80-bit key, 32-bit block symmetric cipher based on Skipjack.  It has the uncommon properties
-of being fast, creating very dissimilar encrypted values for consecutive
+SKIP32 is a 80-bit key, 32-bit block symmetric cipher based on [Skipjack](http://en.wikipedia.org/wiki/Skipjack_%28cipher%29).
+It has the uncommon properties of being fast, creating very dissimilar encrypted values for consecutive
 input values, and producing output of the same size as the input (32-bit).  These make this cipher
 particularly useful for obfuscating series of 32-bit integers (e.g. auto-incremented database ids).
 It is probably not appropriate for general cryptography.
