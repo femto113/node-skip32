@@ -14,7 +14,7 @@ CF. http://search.cpan.org/~esh/Crypt-Skip32-0.17/lib/Crypt/Skip32.pm for more d
 
 ## Install
 
-    npm install skip32 (TO DO not published yet)
+    npm install skip32
 
 or
 
