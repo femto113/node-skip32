@@ -1,3 +1,4 @@
-build
-.lock-wscript
+build/
 npm-debug.log
+.*.sw?
+.lock-wscript
