@@ -89,13 +89,11 @@ skip32(BYTE key[10], BYTE buf[4], int encrypt)
 
 /* the remainder of this file is simply the Node wrapper */
 
-#define BUILDING_NODE_EXTENSION
 #include <node.h>
+#include <node_object_wrap.h>
 
 using namespace v8;
 
-#define Q(sym) String::NewSymbol(#sym)
-#define S(str) String::New(str)
 
 // the only state is the 10 byte key, which is wrapped in a class for interaction with Javascript
 
@@ -106,11 +104,12 @@ class Skip32 : public node::ObjectWrap
 
   BYTE _key[10];
 
-  static Handle<Value> skip32(const Arguments& args, int enc); // this is the guts of the wrapper function
-  static Handle<Value> encrypt(const Arguments& args) { return skip32(args, 1); }
-  static Handle<Value> decrypt(const Arguments& args) { return skip32(args, 0); }
+  static void skip32(const FunctionCallbackInfo<Value>& args, int enc); // this is the guts of the wrapper function
+  static void encrypt(const FunctionCallbackInfo<Value>& args) { skip32(args, 1); }
+  static void decrypt(const FunctionCallbackInfo<Value>& args) { skip32(args, 0); }
 
-  static Handle<Value> New(const Arguments& args);
+  static void New(const FunctionCallbackInfo<Value>& args);
+  static Persistent<Function> constructor;
 
 public:
   static void Init(Handle<Object> target);
@@ -122,19 +121,20 @@ public:
 #define I(BUF, BYTENUM) ((BUF[(BYTENUM)] << ((3 - (BYTENUM)) * 8))) /* shift nth byte of buffer to correct spot in int */
 #define BYTE_ARRAY_TO_INT(BUF) (I(BUF, 0) | I(BUF, 1) | I(BUF, 2) | I(BUF, 3))
 
-Handle<Value> Skip32::skip32(const Arguments& args, int enc)
+void Skip32::skip32(const FunctionCallbackInfo<Value>& args, int enc)
 {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(S("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
 
   // TODO: also accept an array of uints and encrypt/decrypt everyone in the array
   if (!args[0]->IsUint32()) {
-    ThrowException(Exception::TypeError(S("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   Skip32 *obj = ObjectWrap::Unwrap<Skip32>(args.This());
@@ -142,49 +142,62 @@ Handle<Value> Skip32::skip32(const Arguments& args, int enc)
   BYTE buf[4];
   INT_TO_BYTE_ARRAY(i, buf);
   ::skip32(obj->_key, buf, enc);
-  Local<Integer> num = Integer::NewFromUnsigned(BYTE_ARRAY_TO_INT(buf));
+  Local<Integer> num = Integer::NewFromUnsigned(isolate, BYTE_ARRAY_TO_INT(buf));
 
-  return scope.Close(num);
+  args.GetReturnValue().Set(num);
+  return;
 }
 
-Handle<Value> Skip32::New(const Arguments& args)
+Persistent<Function> Skip32::constructor;
+
+void Skip32::New(const FunctionCallbackInfo<Value>& args)
 {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(S("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
 
   if (!args[0]->IsArray()) {
-    ThrowException(Exception::TypeError(S("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
   // TODO: check for min length
   // TODO: accept strings, etc.
 
-  Local<Array> array = Local<Array>::Cast(args[0]);
-  uint32_t keylen = array->Length() > 10 ? 10 : array->Length();
-  BYTE key[10];
-  for (uint32_t i = 0; i < keylen; i++) key[i] = array->Get(i)->Uint32Value() & 0xFF;
-  (new Skip32(key, keylen))->Wrap(args.This());
+  if (args.IsConstructCall()) {
+    Local<Array> array = Local<Array>::Cast(args[0]);
+    uint32_t keylen = array->Length() > 10 ? 10 : array->Length();
+    BYTE key[10];
+    for (uint32_t i = 0; i < keylen; i++) key[i] = array->Get(i)->Uint32Value() & 0xFF;
+    (new Skip32(key, keylen))->Wrap(args.This());
+    args.GetReturnValue().Set(args.This());
+  } else {
+    // turn into construct call
+    const int argc = 1;
+    Local<Value> argv[argc] = { args[0] };
+    Local<Function> cons = Local<Function>::New(isolate, constructor);
+    args.GetReturnValue().Set(cons->NewInstance(argc, argv));
+  }
 
-  return args.This();
+  return;
 }
 
-#define ADD_FUNC_TO_PROTO(ft, func) (ft)->PrototypeTemplate()->Set(Q(func), FunctionTemplate::New(func)->GetFunction());
-
-void Skip32::Init(Handle<Object> target)
+void Skip32::Init(Handle<Object> exports)
 {
-  // Prepare constructor template
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-  tpl->SetClassName(Q(Skip32));
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  ADD_FUNC_TO_PROTO(tpl, encrypt);
-  ADD_FUNC_TO_PROTO(tpl, decrypt);
+  Isolate *isolate = Isolate::GetCurrent();
 
-  Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(Q(Skip32), constructor);
+  // Prepare constructor template
+  Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+  tpl->SetClassName(String::NewFromUtf8(isolate, "Skip32"));
+  tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "encrypt", encrypt);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "decrypt", decrypt);
+
+  constructor.Reset(isolate, tpl->GetFunction());
+  exports->Set(String::NewFromUtf8(isolate, "Skip32"), tpl->GetFunction());
 }
 
 NODE_MODULE(skip32, Skip32::Init)

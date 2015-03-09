@@ -45,3 +45,6 @@ or
               digest().substring(0, 10).split('').map(function (c) { return c.charCodeAt() });
 
 
+## Changes
+
+* 1.1.0 - updated to work with Node 0.12.X (use 1.0.2 for earlier versions of Node)
