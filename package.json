@@ -6,6 +6,6 @@
     { "name": "Ken Woodruff", "email": "ken.woodruff@gmail.com" }
   ],
   "repository": "http://github.com/femto113/node-skip32.git",
-  "main": "build/Release/skip32.node",
+  "main": "skip32.js",
   "engines": { "node": ">= 0.12.0" }
 }

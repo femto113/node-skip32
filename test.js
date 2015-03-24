@@ -1,4 +1,4 @@
-var Skip32 = require('./build/Release/skip32').Skip32;
+var Skip32 = require('./skip32.js').Skip32;
 
 // these are the default test values from the original C code
 var KEY = [ 0x00,0x99,0x88,0x77,0x66,0x55,0x44,0x33,0x22,0x11 ];
