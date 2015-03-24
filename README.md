@@ -1,6 +1,7 @@
 # skip32
 
-This is a node binding for skip32.c by Greg Rose found here:
+Originally a node binding of the C code, this module is now a javascript port of
+skip32.c by Greg Rose once found here (as of March 2015 this link no longer working):
 
 http://www.qualcomm.com.au/PublicationsDocs/skip32.c
 
@@ -47,4 +48,5 @@ or
 
 ## Changes
 
+* 1.2.0 - switch to pure Javascript implementation by @imuli (should work with all versions of Node)
 * 1.1.0 - updated to work with Node 0.12.X (use 1.0.2 for earlier versions of Node)
