@@ -1,50 +1,74 @@
-var Skip32 = require('./skip32.js').Skip32;
+'use strict';
+// jshint node: true
+/* globals describe, it */
+var expect = require('expect.js');
+var Skip32 = require('./skip32').Skip32;
 
-// these are the default test values from the original C code
-var KEY = [ 0x00,0x99,0x88,0x77,0x66,0x55,0x44,0x33,0x22,0x11 ];
-var INPUT = parseInt("33221100", 16)
-var ENCRYPTED = parseInt("819d5f1f", 16);
+describe('Skip32', function() {
+    describe('encrypt/decrypt', function() {
+        var key = [0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, 0xff, 0xff];
+        var skip32 = new Skip32(key);
 
-console.log("running the default test case");
+        it('handles 2^0', function() {
+            var n = Math.pow(2, 0);
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
 
-var s = new Skip32(KEY);
-var e = s.encrypt(INPUT);
-var d = s.decrypt(e);
+        it('handles 2^1', function() {
+            var n = Math.pow(2, 1);
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
 
-console.log("expected:", INPUT.toString(16), "->", ENCRYPTED.toString(16), "->", INPUT.toString(16));
-console.log("     got:", INPUT.toString(16), "->", e.toString(16), "->", d.toString(16));
-console.log();
+        it('handles 2^10', function() {
+            var n = Math.pow(2, 10);
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
 
-// some speed tests follow
+        it('handles 2^30', function() {
+            var n = Math.pow(2, 30);
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
 
-var N = 50000, start;
+        it('handles 2^31', function() {
+            var n = Math.pow(2, 31);
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
 
-console.log("encrypting/decrypting", N, "numbers using Skip32...");
-start = new Date();
-for (var i = 0; i < N; i++) {
-  if (s.decrypt(s.encrypt(i)) != i) {
-    console.log("Skip32 decrypt/encrypt cycle failed for ", i);
-    break;
-  }
-}
-var elapsed = (new Date()) - start;
-console.log("...finished in", elapsed / 1000.0, "seconds", "(approx.", Math.round(N / (elapsed / 1000.0)), "cycles per second)");
+        it('handles 2^32-1', function() {
+            var n = Math.pow(2, 32) - 1;
+            expect(skip32.decrypt(skip32.encrypt(n))).to.be(n);
+        });
+    });
 
-// for comparison do the same thing using one of the fastest built in ciphers (~7x slower in my tests)
-// NOTE: the crypto library is not designed well for this particular usage, e.g. the cipher object isn't reusable
+    describe('encrypt', function() {
+        it('handles vector from original C version', function() {
+            var key = [0x00, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11];
+            var input = 0x33221100;
+            var expected = 0x819d5f1f;
 
-var crypto = require('crypto');
-var cipher_name = 'rc4'
-console.log("encrypting/decrypting", N, "numbers using crypto &", cipher_name, "...");
-start = new Date();
-for (var i = 0; i < N; i++) {
-  var cipher = crypto.createCipher(cipher_name, 'secret'), decipher = crypto.createDecipher(cipher_name, 'secret');
-  e = cipher.update(i.toString(16), 'utf8', 'hex') + cipher.final('hex');
-  d = parseInt(decipher.update(e, 'hex', 'utf8') + decipher.final('utf8'), 16);
-  if (i != d) {
-    console.log(cipher_name, "decrypt/encrypt cycle failed for ", i);
-    break;
-  }
-}
-var elapsed = (new Date()) - start;
-console.log("...finished in", elapsed / 1000.0, "seconds", "(approx.", Math.round(N / (elapsed / 1000.0)), "cycles per second)");
+            var skip32 = new Skip32(key);
+            var actual = skip32.encrypt(input);
+            expect(actual).to.be(expected);
+        });
+
+        it('it consistent with C version (1)', function() {
+            var key = [0x00, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11];
+            var input = 0xffffffff;
+            var expected = 0x32ff23b2;
+
+            var skip32 = new Skip32(key);
+            var actual = skip32.encrypt(input);
+            expect(actual).to.be(expected);
+        });
+
+        it('it consistent with C version (2)', function() {
+            var key = [0xff, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11];
+            var input = 0xffffff44;
+            var expected = 0x5fbc2a31;
+
+            var skip32 = new Skip32(key);
+            var actual = skip32.encrypt(input);
+            expect(actual).to.be(expected);
+        });
+    });
+});
