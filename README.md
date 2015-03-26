@@ -28,6 +28,7 @@ or
     var Skip32 = require("skip32").Skip32;
 
     // 80-bit key is provided to constructor as array of up to 10 bytes
+    // (if fewer than 10 bytes are provided, they will be repeated)
     var cipher = new Skip32([0x9b, 0x21, 0x96, 0xe, 0x1a, 0xcf, 0x24, 0x5f, 0x14, 0x93]);
 
     // NOTE: unlike the objects created by crypto.createCipher,
@@ -48,5 +49,6 @@ or
 
 ## Changes
 
+* 1.2.1 - add short key repitition logic from C++ version
 * 1.2.0 - switch to pure Javascript implementation by @imuli (should work with all versions of Node)
 * 1.1.0 - updated to work with Node 0.12.X (use 1.0.2 for earlier versions of Node)

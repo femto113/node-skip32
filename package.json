@@ -1,7 +1,7 @@
 {
   "name": "skip32",
   "description": "skip32 (Skipjack cipher for 32-bit numbers) for node",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "contributors": [ 
     { "name": "Ken Woodruff", "email": "ken.woodruff@gmail.com" },
     { "name": "Imuli", "email": "i@imu.li" }
