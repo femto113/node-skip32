@@ -16,8 +16,12 @@
    Not copyright, no rights reserved.
 */
 function Skip32(key) {
-    this.key = new Uint8Array(10);
-    for (var i = 0; i < 10; i++) this.key[i] = key[i % key.length];
+    if (typeof key === 'string') {
+      this.key = this.keyFromHex(key);
+    } else {
+      this.key = new Uint8Array(10);
+      for (var i = 0; i < 10; i++) this.key[i] = key[i % key.length];
+    }
 };
 
 Skip32.prototype.init = function(){
@@ -65,6 +69,19 @@ Skip32.prototype.core = function(n,k,d){
 		k+=d;
 	}
 	return ((wr << 16) | wl)>>>0;
+}
+
+Skip32.prototype.keyFromHex = function(hex) {
+  var i, b=[];
+  for (i=0; i<hex.length-1;i+=2){
+    b.push(parseInt(hex.substr(i,2),16));
+  }
+
+  while (b.length < 10) {
+    b.unshift(0);
+  }
+
+  return b;
 }
 
 Skip32.prototype.encrypt = function(n){
