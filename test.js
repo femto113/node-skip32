@@ -16,13 +16,23 @@ console.log("expected:", INPUT.toString(16), "->", ENCRYPTED.toString(16), "->",
 console.log("     got:", INPUT.toString(16), "->", e.toString(16), "->", d.toString(16));
 console.log();
 
-// verify that key extension logic works as expected (bytes of short keys should repeat, not get padded with zeros) 
+// verify that key extension logic works as expected (bytes of short keys should repeat, not get padded with zeros unless lpadZero param given) 
 var SHORT_KEY = [ 0xDE, 0xAD, 0xBE, 0xEF ], short = new Skip32(SHORT_KEY);
 var REPEATED_SHORT_KEY = [ 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD ], repeated_short = new Skip32(REPEATED_SHORT_KEY);
-var PADDED_SHORT_KEY = [ 0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ], padded_short = new Skip32(PADDED_SHORT_KEY);
+var RIGHT_PADDED_SHORT_KEY = [ 0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ], right_padded_short = new Skip32(RIGHT_PADDED_SHORT_KEY);
+var LEFT_PADDED_SHORT_KEY = [ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF ], left_padded_short = new Skip32(LEFT_PADDED_SHORT_KEY);
+
+// verify that the short test key is less than the expected length
+assert(SHORT_KEY.length < Skip32.KEYLEN);
 
 assert.equal(short.encrypt(INPUT), repeated_short.encrypt(INPUT));
-assert.notEqual(short.encrypt(INPUT), padded_short.encrypt(INPUT));
+assert.notEqual(short.encrypt(INPUT), right_padded_short.encrypt(INPUT));
+assert.notEqual(short.encrypt(INPUT), left_padded_short.encrypt(INPUT));
+// verify optional left padding works as expected
+assert.equal((new Skip32(SHORT_KEY, true)).encrypt(INPUT), left_padded_short.encrypt(INPUT));
+// verify hex parsing
+var SHORT_KEY_HEX = "DEADBEEF";
+assert.equal((new Skip32(SHORT_KEY_HEX)).encrypt(INPUT), short.encrypt(INPUT));
 
 // some speed tests follow
 

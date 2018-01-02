@@ -15,14 +15,26 @@
 
    Not copyright, no rights reserved.
 */
-function Skip32(key) {
-    if (typeof key === 'string') {
-      this.key = this.keyFromHex(key);
-    } else {
-      this.key = new Uint8Array(10);
-      for (var i = 0; i < 10; i++) this.key[i] = key[i % key.length];
+function Skip32(key, lpadZero) {
+    // If key seems to be a valid hex string parse it into an array of bytes
+    if (typeof key === 'string' && key.match(/^([0-9A-Fa-f]{2})+$/)) {
+      key = key.split(/(..)/).filter(s => s).map(s => parseInt(s, 16))
     }
-};
+
+    // if lpadZero parameter given and truthy left pad array with 0 as needed
+    if (typeof lpadZero !== 'undefined' && lpadZero) {
+      console.log("left padding %j", key)
+      while (key.length < 10) key.unshift(0);
+      console.log("left padded  %j", key)
+    }
+
+    this.key = new Uint8Array(10);
+    for (var i = 0; i < 10; i++) this.key[i] = key[i % key.length];
+}
+
+// NOTE: we expose a KEYLEN constant in case anything needs to code against it,
+// but we don't reference it in this module for performance reasons
+Object.defineProperty(Skip32, 'KEYLEN', { value: 10 })
 
 Skip32.prototype.init = function(){
 };
@@ -69,19 +81,6 @@ Skip32.prototype.core = function(n,k,d){
 		k+=d;
 	}
 	return ((wr << 16) | wl)>>>0;
-}
-
-Skip32.prototype.keyFromHex = function(hex) {
-  var i, b=[];
-  for (i=0; i<hex.length-1;i+=2){
-    b.push(parseInt(hex.substr(i,2),16));
-  }
-
-  while (b.length < 10) {
-    b.unshift(0);
-  }
-
-  return b;
 }
 
 Skip32.prototype.encrypt = function(n){
