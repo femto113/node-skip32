@@ -49,6 +49,7 @@ or
 
 ## Changes
 
+* 1.3.0 - add support for keys provided as hex encoded strings
 * 1.2.1 - add short key repitition logic from C++ version
 * 1.2.0 - switch to pure Javascript implementation by @imuli (should work with all versions of Node)
 * 1.1.0 - updated to work with Node 0.12.X (use 1.0.2 for earlier versions of Node)
