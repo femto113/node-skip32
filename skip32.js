@@ -23,9 +23,7 @@ function Skip32(key, lpadZero) {
 
     // if lpadZero parameter given and truthy left pad array with 0 as needed
     if (typeof lpadZero !== 'undefined' && lpadZero) {
-      console.log("left padding %j", key)
       while (key.length < 10) key.unshift(0);
-      console.log("left padded  %j", key)
     }
 
     this.key = new Uint8Array(10);
