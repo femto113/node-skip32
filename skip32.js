@@ -1,4 +1,4 @@
-/* 
+/*
    Skip32.js - public domain javascript implementation of:
 
    SKIP32 -- 32 bit block cipher based on SKIPJACK.
@@ -6,11 +6,11 @@
 
    In common: F-table, G-permutation, key schedule.
    Different: 24 round feistel structure.
-   Based on:  Unoptimized test implementation of SKIPJACK algorithm 
+   Based on:  Unoptimized test implementation of SKIPJACK algorithm
               Panu Rissanen <bande@lut.fi>
 
-   SKIPJACK and KEA Algorithm Specifications 
-   Version 2.0 
+   SKIPJACK and KEA Algorithm Specifications
+   Version 2.0
    29 May 1998
 
    Not copyright, no rights reserved.
@@ -37,7 +37,7 @@ Object.defineProperty(Skip32, 'KEYLEN', { value: 10 })
 Skip32.prototype.init = function(){
 };
 
-var _buf = new Buffer([
+var _buf = Buffer.from([
 0xa3,0xd7,0x09,0x83,0xf8,0x48,0xf6,0xf4,0xb3,0x21,0x15,0x78,0x99,0xb1,0xaf,0xf9,
 0xe7,0x2d,0x4d,0x8a,0xce,0x4c,0xca,0x2e,0x52,0x95,0xd9,0x1e,0x4e,0x38,0x44,0x28,
 0x0a,0xdf,0x02,0xa0,0x17,0xf1,0x60,0x68,0x12,0xb7,0x7a,0xc3,0xe9,0xfa,0x3d,0x53,
