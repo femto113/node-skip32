@@ -2,10 +2,12 @@
   "name": "skip32",
   "description": "skip32 (Skipjack cipher for 32-bit numbers) for node",
   "version": "1.3.0",
-  "contributors": [ 
+  "contributors": [
     { "name": "Ken Woodruff", "email": "ken.woodruff@gmail.com" },
-    { "name": "Imuli", "email": "i@imu.li" }
+    { "name": "Imuli", "email": "i@imu.li" },
+    { "name": "Dmitry Shirokov", "email": "deadrunk@gmail.com" }
   ],
   "repository": "http://github.com/femto113/node-skip32.git",
-  "main": "skip32.js"
+  "main": "skip32.js",
+  "types": "types.d.ts"
 }
